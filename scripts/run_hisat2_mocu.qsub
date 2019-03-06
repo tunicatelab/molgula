@@ -1,0 +1,29 @@
+#!/bin/bash -login
+
+#PBS -l walltime=68:00:00,nodes=1:ppn=8,mem=128gb
+#PBS -N mocu_hisat2
+#PBS -A ged
+#PBS -M elijahlowe@gmail.com
+#PBS -m abe
+
+module load hisat2
+module load SAMTools/1.5
+module load Java/1.8.0_31
+
+cd $SCRATCH/mol_paper/reads
+
+ln -sf ~/genomes/mocu.redundan.fa .
+
+hisat2-build mocu.redundan.fa mocu.redundan
+
+hisat2 -p 8 --rg-id=Mocu_3hpf --rg SM:Mocu_3hpf --rg PL:ILLUMINA --rg PU:Mocu_3hpf_L001 -x mocu.redundan --rna-strandness RF -1 SRR1197522_1.new_fastq -2 SRR1197522_2.new_fastq -S SRR1197522.sam
+hisat2 -p 8 --rg-id=Mocu_4hpf --rg SM:Mocu_4hpf --rg PL:ILLUMINA --rg PU:Mocu_4hpf_L001 -x mocu.redundan --rna-strandness RF -1 SRR1197965_1.new_fastq -2 SRR1197965_2.new_fastq -S SRR1197965.sam
+hisat2 -p 8 --rg-id=Mocu_6hpf --rg SM:Mocu_6hpf --rg PL:ILLUMINA --rg PU:Mocu_6hpf_L001 -x mocu.redundan --rna-strandness RF -1 SRR1197972_1.new_fastq -2 SRR1197972_2.new_fastq -S SRR1197972.sam
+
+samtools sort -@ 8 -o SRR1197522.bam SRR1197522.sam
+samtools sort -@ 8 -o SRR1197965.bam SRR1197965.sam
+samtools sort -@ 8 -o SRR1197972.bam SRR1197972.sam
+
+java -Xmx112g -jar ~/picard/picard.jar MergeSamFiles OUTPUT=mocu.bam INPUT=SRR1197522.bam INPUT=SRR1197965.bam INPUT=SRR1197972.bam
+
+qstat -f ${PBS_JOBID}

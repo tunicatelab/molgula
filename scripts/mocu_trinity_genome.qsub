@@ -1,0 +1,19 @@
+#!/bin/bash -login
+
+#PBS -l walltime=168:00:00,nodes=1:ppn=12,mem=550gb
+#PBS -N m.ocu_trinity_genome
+#PBS -A ged
+#PBS -M elijahlowe@gmail.com
+#PBS -m abe
+
+module load GNU/4.4.5b
+module load OpenMPI/1.10.0
+module load trinity/2.6.6
+
+cd $SCRATCH/mol_paper/reads
+
+Trinity --genome_guided_bam mocu.bam --max_memory 500G --genome_guided_max_intron 10000 --CPU 12 --output mocu_genome_trinity
+
+#Trinity --seqType fq --max_memory 700G --normalize_reads --normalize_by_read_set --trimmomatic --left SRR1197986_1.fastq,SRR1199259_1.fastq,SRR1197985_1.fastq,SRR1199268_1.fastq,SRR1199464_1.fastq --right SRR1197986_2.fastq,SRR1199259_2.fastq,SRR1197985_2.fastq,SRR1199268_2.fastq,SRR1199464_2.fastq --CPU 12 --full_cleanup --output mocc_trinity
+
+qstat -f ${PBS_JOBID}
