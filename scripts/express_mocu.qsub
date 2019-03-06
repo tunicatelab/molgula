@@ -1,0 +1,19 @@
+#!/bin/bash -login
+#PBS -l walltime=48:00:00,nodes=1:ppn=2,mem=64gb
+#PBS -o mocu.express.$PBS_JOBID
+#PBS -q biocluster-6
+#PBS -j oe
+#PBS -m abe
+#PBS -M elowe3@gatech.edu
+
+module load express/1.4.1
+module load bowtie2/2.3.2
+
+cd scratch
+
+bowtie2-build ~/scratch/mocu_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA mocu_GG_bt2
+for i in ~/scratch/molgula/ocu/trans/SRR*_1.fastq.gz ~/scratch/molgula/hybrid/SRR*_1.fastq.gz;do bowtie2 -p 4 -x mocu_GG_bt2 -1 $i -2 ${i/_1/_2} | express -o $(basename $i _1.fastq)_mocu_GG ~/data/mocu_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA;done
+
+
+qstat -f ${PBS_JOBID}
+

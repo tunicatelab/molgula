@@ -1,0 +1,14 @@
+#!/bin/bash -login
+#PBS -l walltime=24:00:00,nodes=1:ppn=1,mem=64gb
+#PBS -o mocc.missing.$PBS_JOBID
+#PBS -q biocluster-6
+#PBS -j oe
+#PBS -m abe
+#PBS -M elowe3@gatech.edu
+
+cd scratch
+
+grep -A1 -f mocc.x.ciona.missing mocc_GG_supertrans.fasta.transdecoder.mRNA > mocc_GG_supertrans.fasta.transdecoder.missing.mRNA
+
+qstat -f ${PBS_JOBID}
+
