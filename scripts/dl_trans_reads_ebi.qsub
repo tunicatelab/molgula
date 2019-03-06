@@ -1,0 +1,26 @@
+#!/bin/bash -login 
+
+#PBS -l walltime=96:00:00,nodes=1:ppn=1,mem=32gb
+#PBS -N assem_step1
+#PBS -A ged
+#PBS -M elijahlowe@gmail.com
+#PBS -m abe                                                                                                                                                                                                     
+
+module load screed
+module load khmer
+module load oases
+module load velvet
+module load FASTX
+
+mocuG_sra='SRR1501181 SRR1501179 SRR1501177'
+moccG_sra='SRR1501175 SRR1501173 SRR1501171'
+moxiG_sra='SRR1501096 SRR1501095 SRR1491616'
+
+mocuT_sra='SRR1197522 SRR1197965 SRR1197972' 
+moccT_sra='SRR1197985 SRR1197986 SRR1199259 SRR1199268 SRR1199464'
+hybT_sra='SRR1198346 SRR1198337 SRR1198321'
+cd $SCRATCH/mol_paper/
+
+for sra in $mocuT_sra $moccT_sra $hybT_sra;do wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/${sra:0:6}/00${sra:9:10}/$sra/*;done
+for i in SRR*gz;do zcat $i | sed 's/SRR.*\ H/H/g' > ${i/.gz/};done
+#for sra in $all_sra;do wget ftp://ftp.sra.ebi.ac.uk/vol1/fastq/${sra:0:6}/00${sra:9:10}/$sra/*;done

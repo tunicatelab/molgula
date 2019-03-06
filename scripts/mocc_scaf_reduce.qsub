@@ -1,0 +1,21 @@
+#!/bin/bash -login
+
+#PBS -l walltime=72:00:00,nodes=1:ppn=8,mem=64gb
+#PBS -N mocc_scaf_reduce
+#PBS -A ged
+#PBS -M elijahlowe@gmail.com
+#PBS -m abe
+
+module load GNU/4.8.3
+export PATH=$PATH:~/snap/
+#module load bwa
+#module load numpy
+
+cd $SCRATCH/genome_assembly/mocc
+
+rm -rf run_redun
+~/redundans/./redundans.py -v -f Mocc_genome_v1.2.fa -i A_MOcculta_*trim.fastq.gz -o run_redun -r ../mocu/run_redund/scaffolds.reduced.fa
+
+
+qstat -f ${PBS_JOBID}
+
