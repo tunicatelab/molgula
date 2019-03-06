@@ -1,1 +1,2 @@
-# tailed
+# Molgula occulta, M. oculata and hybrid analysis
+M. occulta and M. oculata are tunicate speices found on the Northwestern coast of France, in Roscoff. They look very similar in their adult stages, however have alternate body plans in their larval stage. M. oculata goes through typical tunicate development, with a tadpole larvae. M. occulta, on the hand forgoes developing a tail and goes into metamorphosis shortly after hatching. These species are able to be cross fertilized producing a hybir with half a tail. Using RNA-seq, we sequenced and examined three developmental time points for M. occulta, M. oculata and their hybir.
