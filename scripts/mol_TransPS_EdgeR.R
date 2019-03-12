@@ -551,9 +551,9 @@ topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table %>%
   mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
   write_csv("4v6_Mol_GG_edgeR_results.csv")
 
-mocc_3v4 <- topTags(et.mocc.4v6, n=nrow(et.mocc.3v4$table))$table %>% 
+mocc_3v4 <- topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$table))$table %>% 
   rownames_to_column(var = "gene")
-hyb_3v4 <- topTags(et.hyb.4v6, n=nrow(et.hyb.3v4$table))$table %>% 
+hyb_3v4 <- topTags(et.hyb.3v4, n=nrow(et.hyb.3v4$table))$table %>% 
   rownames_to_column(var = "gene")
 mocuhyb3vmocchyb3 <- topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table %>% 
   rownames_to_column(var = "gene")
