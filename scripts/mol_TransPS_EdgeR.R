@@ -9,10 +9,10 @@ library(gridExtra)
 setwd("/Users/elijahlowe/Desktop/tails/scaffolded_gene_models/")
 
 
-Mocu.3hpf <- read_tsv("SRR1197522_mocu_GG.xprs") %>% 
+Mocu.3hpf <- read_tsv("SRR1197965_mocu_GG.xprs") %>% 
   dplyr::rename(Mocu_f3 = eff_counts, mocu_gene = target_id)
 Mocu.3hpf #test to see if loaded properly
-Mocu.4hpf <- read_tsv("SRR1197965_mocu_GG.xprs") %>% 
+Mocu.4hpf <- read_tsv("SRR1197522_mocu_GG.xprs") %>% 
   dplyr::rename(Mocu_f4 = eff_counts, mocu_gene = target_id)
 Mocu.6hpf <- read_tsv("SRR1197972_mocu_GG.xprs") %>% 
   dplyr::rename(Mocu_f6 = eff_counts, mocu_gene = target_id)
@@ -50,9 +50,9 @@ Mocc.data <- Mocc.3hpf %>%
 
 # Load hybrid samples -----------------------------------------------------
 
-hyb_ocu.3hpf <- read_tsv("SRR1198321_mocu_GG.xprs") %>% 
+hyb_ocu.3hpf <- read_tsv("SRR1198337_mocu_GG.xprs") %>% 
   dplyr::rename(hyb_ocu_f3 = eff_counts, mocu_gene = target_id)
-hyb_ocu.4hpf <- read_tsv("SRR1198337_mocu_GG.xprs") %>% 
+hyb_ocu.4hpf <- read_tsv("SRR1198321_mocu_GG.xprs") %>% 
   dplyr::rename(hyb_ocu_f4 = eff_counts, mocu_gene = target_id)
 hyb_ocu.6hpf <- read_tsv("SRR1198346_mocu_GG.xprs") %>% 
   dplyr::rename(hyb_ocu_f6 = eff_counts, mocu_gene = target_id)
@@ -62,9 +62,9 @@ hyb_ocu.data <- hyb_ocu.3hpf %>%
   inner_join(hyb_ocu.6hpf, by = "mocu_gene") %>% 
   select(mocu_gene, hyb_ocu_f3, hyb_ocu_f4, hyb_ocu_f6)
 
-hyb_occ.3hpf <- read_tsv("SRR1198321_mocc_GG.xprs") %>% 
+hyb_occ.3hpf <- read_tsv("SRR1198337_mocc_GG.xprs") %>% 
   dplyr::rename(hyb_occ_f3 = eff_counts, mocc_gene = target_id)
-hyb_occ.4hpf <- read_tsv("SRR1198337_mocc_GG.xprs") %>% 
+hyb_occ.4hpf <- read_tsv("SRR1198321_mocc_GG.xprs") %>% 
   dplyr::rename(hyb_occ_f4 = eff_counts, mocc_gene = target_id)
 hyb_occ.6hpf <- read_tsv("SRR1198346_mocc_GG.xprs") %>% 
   dplyr::rename(hyb_occ_f6 = eff_counts, mocc_gene = target_id)
