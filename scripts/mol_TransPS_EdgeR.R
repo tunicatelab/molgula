@@ -111,11 +111,11 @@ edger.data<-DGEList(counts=all.data, group = Group)
 # fit <- glmFit(edger.data, design)
 # lrt <- glmLRT(fit, coef = ocuf4vsocuf6)
 # 
-#  keep <- rowSums(cpm(edger.data)>1) >=2
+keep <- rowSums(cpm(edger.data)>0.5) >=2
 #  keep 
-#  edger.data<-edger.data[keep,]
+edger.data<-edger.data[keep,, keep.lib.sizes=FALSE]
 
-design <- model.matrix(~Group)
+design <- model.matrix(~0+Group)
 colnames(design) <- levels(Group)
 
 
@@ -145,6 +145,7 @@ hybf4vshybf6 = c("hyb.f4","hyb.f6")
 #d1 <- edger.data
 #d1<-estimateCommonDisp(edger.data)
 #d4 <- estimateGLMTagwiseDisp(d3,design)
+edger.data <- calcNormFactors(edger.data)
 d2 <- estimateGLMCommonDisp(edger.data,design,verbose=TRUE)
 d3 <- estimateGLMTagwiseDisp(d2,design)
 
@@ -171,6 +172,10 @@ jpeg('et.mocu.4v6.jpg')
 plotSmear(et.mocu.4v6, ylim=c(-10,10), de.tags=detags, main="M. oculata tailbud vs neurula")
 dev.off()
 
+tt <- topTags(et.hyb.4v6,n=10000)$table
+
+ggplot(data=tt) + geom_point(aes(x=logFC,y=-log(FDR),color=logCPM)) +
+  scale_colour_gradientn(colours=c("#000000" ,"#FF0000" ))
 et.mocc.4v6<-exactTest(d3,pair=occf4vsoccf6)
 summary(de.mocc.4v6 <- decideTestsDGE(et.mocc.4v6, p=0.05))
 detags <- rownames(d3)[as.logical(de.mocc.4v6)]
@@ -321,6 +326,57 @@ rownames_to_column(topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
   mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
   write_csv("et.hyb.4v6.down.csv")
+
+# write all results -------------------------------------------------------
+
+
+mocc_4v6 <- topTags(et.mocc.4v6, n=nrow(et.mocc.4v6$table))$table %>% 
+  rownames_to_column(var = "gene")
+hyb_4v6 <- topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb4vmocchyb4 <- topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb6vmocchyb6 <- topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table %>% 
+  rownames_to_column(var = "gene")
+
+
+topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table %>% 
+  rownames_to_column(var = "gene") %>% 
+  inner_join(mocc_4v6, by = 'gene') %>% 
+  inner_join(hyb_4v6, by = 'gene') %>%
+  inner_join(mocuhyb4vmocchyb4, by = 'gene') %>%
+  inner_join(mocuhyb6vmocchyb6, by = 'gene') %>% 
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  write_csv("4v6_Mol_GG_edgeR_results.csv")
+
+mocc_3v4 <- topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$table))$table %>% 
+  rownames_to_column(var = "gene")
+hyb_3v4 <- topTags(et.hyb.3v4, n=nrow(et.hyb.3v4$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb3vmocchyb3 <- topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb4vmocchyb4 <- topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table %>% 
+  rownames_to_column(var = "gene")
+
+
+topTags(et.mocu.3v4, n=nrow(et.mocu.3v4$table))$table %>% 
+  rownames_to_column(var = "gene") %>% 
+  inner_join(mocc_3v4, by = 'gene') %>% 
+  inner_join(hyb_3v4, by = 'gene') %>%
+  inner_join(mocuhyb3vmocchyb3, by = 'gene') %>%
+  inner_join(mocuhyb4vmocchyb4, by = 'gene') %>% 
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  write_csv("3v4_Mol_GG_edgeR_results.csv")
+
+#Loading the rvest package
+library('rvest')
+library(tibble)
+library(data.table)
+library(readxl)
+
+#Scrap txt file from url and skip metadata
 
 
 
@@ -528,57 +584,6 @@ mocu_meta %>%
 manx <- c("MOCU.TRINITY_GG_4725_c0_g1@KH.C2.957.v1.A.nonSL1-1")
 
 
-# write all results -------------------------------------------------------
-
-
-mocc_4v6 <- topTags(et.mocc.4v6, n=nrow(et.mocc.4v6$table))$table %>% 
-  rownames_to_column(var = "gene")
-hyb_4v6 <- topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table %>% 
-  rownames_to_column(var = "gene")
-mocuhyb4vmocchyb4 <- topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table %>% 
-  rownames_to_column(var = "gene")
-mocuhyb6vmocchyb6 <- topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table %>% 
-  rownames_to_column(var = "gene")
-
-
-topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table %>% 
-  rownames_to_column(var = "gene") %>% 
-  inner_join(mocc_4v6, by = 'gene') %>% 
-  inner_join(hyb_4v6, by = 'gene') %>%
-  inner_join(mocuhyb4vmocchyb4, by = 'gene') %>%
-  inner_join(mocuhyb6vmocchyb6, by = 'gene') %>% 
-  separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
-  write_csv("4v6_Mol_GG_edgeR_results.csv")
-
-mocc_3v4 <- topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$table))$table %>% 
-  rownames_to_column(var = "gene")
-hyb_3v4 <- topTags(et.hyb.3v4, n=nrow(et.hyb.3v4$table))$table %>% 
-  rownames_to_column(var = "gene")
-mocuhyb3vmocchyb3 <- topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table %>% 
-  rownames_to_column(var = "gene")
-mocuhyb4vmocchyb4 <- topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table %>% 
-  rownames_to_column(var = "gene")
-
-
-topTags(et.mocu.3v4, n=nrow(et.mocu.3v4$table))$table %>% 
-  rownames_to_column(var = "gene") %>% 
-  inner_join(mocc_3v4, by = 'gene') %>% 
-  inner_join(hyb_3v4, by = 'gene') %>%
-  inner_join(mocuhyb3vmocchyb3, by = 'gene') %>%
-  inner_join(mocuhyb4vmocchyb4, by = 'gene') %>% 
-  separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
-  write_csv("3v4_Mol_GG_edgeR_results.csv")
-
-#Loading the rvest package
-library('rvest')
-library(tibble)
-library(data.table)
-library(readxl)
-
-#Scrap txt file from url and skip metadata
-
 
 # Transcription Factor genes ----------------------------------------------
 
@@ -667,3 +672,16 @@ annotated_genes <- TF %>%
   bind_rows(signaling) %>% 
   bind_rows(zf) %>% 
   rename(KH.id = X3, ghost.id = X2, gene_name = X1)
+
+# Volcano plots -----------------------------------------------------------
+
+if (!requireNamespace('BiocManager', quietly = TRUE))
+  install.packages('BiocManager')
+BiocManager::install('EnhancedVolcano')
+library(EnhancedVolcano)
+
+EnhancedVolcano(et.mocu.4v6,
+                lab = rownames(et.mocu.4v6),
+                x = 'log2FoldChange',
+                y = 'pvalue',
+                xlim = c(-5, 8))
