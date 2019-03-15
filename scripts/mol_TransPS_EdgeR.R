@@ -157,9 +157,12 @@ edgeRvol <- function(edgeR_results, plot_title){
     rownames_to_column(var = "gene") %>% 
     dplyr::mutate(sig=ifelse(FDR < 0.05 & abs(logFC) > 1.5, "padj<0.05", "Not Sig"))
   volc = ggplot(mutateddf, aes(logFC, -log10(FDR))) + #volcanoplot with log2Foldchange versus pvalue
-    geom_point(aes(col=sig)) + #add points colored by significance
-    scale_color_manual(values=c("black", "red")) + 
-    ggtitle(plot_title) #e.g. 'Volcanoplot DESeq2'
+    geom_point(aes(col=sig), alpha = 0.5) + #add points colored by significance
+    scale_color_manual(values=c("black", "red")) +
+    xlim(-10.25,10.25) +
+    ylim(0, 11) +
+    ggtitle(plot_title) + #e.g. 'Volcanoplot DESeq2'
+    theme_minimal() # simplify plot for publications
   volc+geom_text_repel(data=head(mutateddf, 20), aes(label=gene)) #adding text for the top 20 genes
   #ggsave("Volcanoplot.pdf", device="pdf") #In case you want to easily save to disk
   volc
