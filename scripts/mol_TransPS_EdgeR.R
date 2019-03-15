@@ -139,6 +139,7 @@ ocuf3vsocuf6 = c("ocu.f3","ocu.f6")
 occf3vsoccf6 = c("occ.f3","occ.f6")
 hybf3vshybf4 = c("hyb.f3","hyb.f4")
 hybf4vshybf6 = c("hyb.f4","hyb.f6")
+hybf3vshybf6 = c("hyb.f3","hyb.f6")
 
 #housekeeping <- read_csv("mocu_housekeeping.list", col_names = "housekeeping")
 #housekeeping1 <- read_csv("mocu_gimme.x.KH2012_housekeeping.csv", col_names = c("housekeeping","KH_ID"))
@@ -151,50 +152,89 @@ d3 <- estimateGLMTagwiseDisp(d2,design)
 
 plotMDS(d3, main="edgeR MDS Plot")
 
+edgeRvol <- function(edgeR_results, plot_title){
+  mutateddf <- topTags(edgeR_results, n=nrow(edgeR_results$table))$table %>% 
+    rownames_to_column(var = "gene") %>% 
+    dplyr::mutate(sig=ifelse(FDR < 0.05 & abs(logFC) > 1.5, "padj<0.05", "Not Sig"))
+  volc = ggplot(mutateddf, aes(logFC, -log10(FDR))) + #volcanoplot with log2Foldchange versus pvalue
+    geom_point(aes(col=sig)) + #add points colored by significance
+    scale_color_manual(values=c("black", "red")) + 
+    ggtitle(plot_title) #e.g. 'Volcanoplot DESeq2'
+  volc+geom_text_repel(data=head(mutateddf, 20), aes(label=gene)) #adding text for the top 20 genes
+  #ggsave("Volcanoplot.pdf", device="pdf") #In case you want to easily save to disk
+  volc
+}
+
 et.mocu.3v4<-exactTest(d3,pair=ocuf3vsocuf4)
 summary(de.mocu.3v4 <- decideTestsDGE(et.mocu.3v4, p=0.05))
 detags <- rownames(d3)[as.logical(de.mocu.3v4)]
-jpeg('et.mocu.3v4.jpg')
-plotSmear(et.mocu.3v4, ylim=c(-10,10), de.tags=detags, main="M. oculata neurula vs gastrula")
+pdf('mocu.3v4.pdf')
+edgeRvol(et.mocu.3v4, "M. oculata neurula vs gastrula")
+#plotSmear(et.mocu.3v4, ylim=c(-10,10), de.tags=detags, main="M. oculata neurula vs gastrula")
 dev.off()
 
 et.mocc.3v4<-exactTest(d3,pair=occf3vsoccf4)
 summary(de.mocc.3v4 <- decideTestsDGE(et.mocc.3v4, p=0.05))
 detags <- rownames(d3)[as.logical(de.mocc.3v4)]
-jpeg('et.mocc.3v4.jpg')
-plotSmear(et.mocc.3v4, ylim=c(-10,10), de.tags=detags, main="M. occulta neurula vs gastrula")
-dev.off()
-
-et.mocu.4v6<-exactTest(d3,pair=ocuf4vsocuf6)
-summary(de.mocu.4v6 <- decideTestsDGE(et.mocu.4v6, p=0.05))
-detags <- rownames(d3)[as.logical(de.mocu.4v6)]
-jpeg('et.mocu.4v6.jpg')
-plotSmear(et.mocu.4v6, ylim=c(-10,10), de.tags=detags, main="M. oculata tailbud vs neurula")
-dev.off()
-
-tt <- topTags(et.hyb.4v6,n=10000)$table
-
-ggplot(data=tt) + geom_point(aes(x=logFC,y=-log(FDR),color=logCPM)) +
-  scale_colour_gradientn(colours=c("#000000" ,"#FF0000" ))
-et.mocc.4v6<-exactTest(d3,pair=occf4vsoccf6)
-summary(de.mocc.4v6 <- decideTestsDGE(et.mocc.4v6, p=0.05))
-detags <- rownames(d3)[as.logical(de.mocc.4v6)]
-jpeg('et.mocc.4v6.jpg')
-plotSmear(et.mocc.4v6, ylim=c(-10,10), de.tags=detags, main="M. occulta tailbud vs neurula")
+pdf('mocc.3v4.pdf')
+edgeRvol(et.mocc.3v4, "M. occulta neurula vs gastrula")
+#plotSmear(et.mocc.3v4, ylim=c(-10,10), de.tags=detags, main="M. occulta neurula vs gastrula")
 dev.off()
 
 et.hyb.3v4<-exactTest(d3,pair=hybf3vshybf4)
 summary(de.hyb.3v4 <- decideTestsDGE(et.hyb.3v4, p=0.05))
 detags <- rownames(d3)[as.logical(de.hyb.3v4)]
-jpeg('et.hyb.3v4.jpg')
-plotSmear(et.hyb.3v4, ylim=c(-10,10), de.tags=detags, main="Hybrid neurula vs gastrula")
+pdf('hyb.3v4.pdf')
+edgeRvol(et.hyb.3v4, "Hybrid neurula vs gastrula")
+#plotSmear(et.hyb.3v4, ylim=c(-10,10), de.tags=detags, main="Hybrid neurula vs gastrula")
+dev.off()
+
+et.mocu.4v6<-exactTest(d3,pair=ocuf4vsocuf6)
+summary(de.mocu.4v6 <- decideTestsDGE(et.mocu.4v6, p=0.05))
+detags <- rownames(d3)[as.logical(de.mocu.4v6)]
+pdf('mocu.4v6.pdf')
+edgeRvol(et.mocu.4v6, "M. oculata tailbud vs neurula")
+#plotSmear(et.mocu.4v6, ylim=c(-10,10), de.tags=detags, main="M. oculata tailbud vs neurula")
+dev.off()
+
+et.mocc.4v6<-exactTest(d3,pair=occf4vsoccf6)
+summary(de.mocc.4v6 <- decideTestsDGE(et.mocc.4v6, p=0.05))
+detags <- rownames(d3)[as.logical(de.mocc.4v6)]
+pdf('mocc.4v6.pdf')
+edgeRvol(et.mocc.4v6, "M. occulta tailbud v neurula")
+#plotSmear(et.mocc.4v6, ylim=c(-10,10), de.tags=detags, main="M. occulta tailbud vs neurula")
 dev.off()
 
 et.hyb.4v6<-exactTest(d3,pair=hybf4vshybf6)
 summary(de.hyb.4v6 <- decideTestsDGE(et.hyb.4v6, p=0.05))
 detags <- rownames(d3)[as.logical(de.hyb.4v6)]
-jpeg('et.hyb.4v6.jpg')
-plotSmear(et.hyb.4v6, ylim=c(-10,10), de.tags=detags, main="Hybrid tailbud vs neurula")
+pdf('hyb.4v6.pdf')
+edgeRvol(et.hyb.4v6, "Hybrid tailbud vs neurula")
+#plotSmear(et.hyb.4v6, ylim=c(-10,10), de.tags=detags, main="Hybrid tailbud vs neurula")
+dev.off()
+
+et.mocu.3v6<-exactTest(d3,pair=ocuf3vsocuf6)
+summary(de.mocu.3v6 <- decideTestsDGE(et.mocu.3v6, p=0.05))
+detags <- rownames(d3)[as.logical(de.mocu.3v6)]
+pdf('mocu.3v6.pdf')
+edgeRvol(et.mocu.3v6, "M. oculata tailbud vs gastrula")
+#plotSmear(et.mocu.4v6, ylim=c(-10,10), de.tags=detags, main="M. oculata tailbud vs neurula")
+dev.off()
+
+et.mocc.3v6<-exactTest(d3,pair=occf3vsoccf6)
+summary(de.mocc.3v6 <- decideTestsDGE(et.mocc.3v6, p=0.05))
+detags <- rownames(d3)[as.logical(de.mocc.3v6)]
+pdf('mocc.3v6.pdf')
+edgeRvol(et.mocc.3v6, "M. occulta tailbud v gastrula")
+#plotSmear(et.mocc.4v6, ylim=c(-10,10), de.tags=detags, main="M. occulta tailbud vs neurula")
+dev.off()
+
+et.hyb.3v6<-exactTest(d3,pair=hybf3vshybf6)
+summary(de.hyb.3v6 <- decideTestsDGE(et.hyb.3v6, p=0.05))
+detags <- rownames(d3)[as.logical(de.hyb.3v6)]
+pdf('hyb.3v6.pdf')
+edgeRvol(et.hyb.3v6, "Hybrid tailbud vs gastrula")
+#plotSmear(et.hyb.v6, ylim=c(-10,10), de.tags=detags, main="Hybrid tailbud vs neurula")
 dev.off()
 
 et.mocuhyb3vmocchyb3<-exactTest(d3,pair=hocuf3vshoccf3)
@@ -370,6 +410,26 @@ topTags(et.mocu.3v4, n=nrow(et.mocu.3v4$table))$table %>%
   mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
   write_csv("3v4_Mol_GG_edgeR_results.csv")
 
+mocc_3v6 <- topTags(et.mocc.3v6, n=nrow(et.mocc.3v6$table))$table %>% 
+  rownames_to_column(var = "gene")
+hyb_3v6 <- topTags(et.hyb.3v6, n=nrow(et.hyb.3v6$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb3vmocchyb3 <- topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table %>% 
+  rownames_to_column(var = "gene")
+mocuhyb6vmocchyb6 <- topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table %>% 
+  rownames_to_column(var = "gene")
+
+
+topTags(et.mocu.3v6, n=nrow(et.mocu.4v6$table))$table %>% 
+  rownames_to_column(var = "gene") %>% 
+  inner_join(mocc_3v6, by = 'gene') %>% 
+  inner_join(hyb_3v6, by = 'gene') %>%
+  inner_join(mocuhyb3vmocchyb3, by = 'gene') %>%
+  inner_join(mocuhyb6vmocchyb6, by = 'gene') %>% 
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  write_csv("3v6_Mol_GG_edgeR_results.csv")
+
 #Loading the rvest package
 library('rvest')
 library(tibble)
@@ -385,11 +445,11 @@ library(readxl)
 
 mocu_4v6_up_genes <- rownames_to_column(topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>% 
+  filter(logFC > 1.5, FDR < 0.1) %>% 
   select(gene)
 hyb_4v6_up_genes <- rownames_to_column(topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>% 
+  filter(logFC > 1.5, FDR < 0.1) %>% 
   select(gene)
 mocc_4v6_down_genes <- rownames_to_column(topTags(et.mocc.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") %>%
   as_tibble() %>%
@@ -475,9 +535,13 @@ hybAll_allele.p <- ggplot(hybAll_allele, aes(x=logFC, fill = allele, color = all
   labs(title = "Allele specific expression of all hybrid DEG at 6hpf") +
   theme(plot.title = element_text(hjust = 0.5)) +
   geom_vline(xintercept = 0, linetype = 2)
-hybAll_allele.p + theme_minimal()
+pdf("allele_hyb_tb_DE.pdf")
+  hybAll_allele.p + theme_minimal()
+dev.off()
 
-grid.arrange(hybAll_allele.p, hybUp_allele.p, overlap_allele.p)
+pdf("allele_hyb_tb_all.pdf")
+  grid.arrange(hybAll_allele.p, hybUp_allele.p, overlap_allele.p)
+dev.off()
 # Print count files -------------------------------------------------------
 
 print_counts <- function(file_name, species_data, gene_sp){
@@ -679,6 +743,10 @@ if (!requireNamespace('BiocManager', quietly = TRUE))
   install.packages('BiocManager')
 BiocManager::install('EnhancedVolcano')
 library(EnhancedVolcano)
+
+install.packages("devtools")
+devtools::install_github("kevinblighe/EnhancedVolcano")
+library("EnhancedVolcano")
 
 EnhancedVolcano(et.mocu.4v6,
                 lab = rownames(et.mocu.4v6),
