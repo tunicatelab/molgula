@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
 #SBATCH --cpus-per-task=4           # number of CPUs (or cores) per task (same as -c)
 #SBATCH --mem-per-cpu=32G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
-#SBATCH --job-name mocu_pseudo_blast      # you can give your job a name for easier identification (same as -J)
+#SBATCH --job-name mocu_pseudo_pipeline      # you can give your job a name for easier identification (same as -J)
 #SBATCH --mail-user=elijahlowe@gmail.com
 #SBATCH --mail-type=ALL
  
@@ -21,6 +21,9 @@ cd $SCRATCH/mol_paper/mol_paper/maker
 #sed -i 's/+//g' KH.KHGene.2012.Met.protein.fasta # remove * from end of sequences
 #makeblastdb -in KH.KHGene.2012.Met.protein.fasta -dbtype prot -parse_seqids
 #makeblastdb -in mocu.redundan.fa -dbtype nucl -parse_seqids
-tblastn -db mocu.redundan.fa -query KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocu
- 
+#tblastn -db mocu.redundan.fa -query KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocu
+tblastn -query KH.KHGene.2012.Met.protein.fasta -db mocu.redundan.maker.output/mocu.redundan.all.maker.transcripts.fasta -evalue 1e-30 -qcov_hsp_perc 80 > ciona_vs_mocu_cdna
+
+source activate py2.7
+python ~/_pseudo_pkg/pseudo_wrap.py mocu_pseudo_param_cdna.txt 
 scontrol show job $SLURM_JOB_ID     ### write job information to output file

@@ -14,7 +14,7 @@
  
 module load maker
  
-cd $SRATCH/mol_paper/mol_paper/maker/mocc
+cd $SCRATCH/mol_paper/mol_paper/maker/mocc
  
 maker -R -fix_nucleotides -cpus 8              ### call your executable (similar to mpirun)
  

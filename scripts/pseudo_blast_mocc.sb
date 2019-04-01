@@ -1,12 +1,12 @@
 #!/bin/bash --login
 ########## SBATCH Lines for Resource Request ##########
  
-#SBATCH --time=72:00:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --time=120:00:00             # limit of wall clock time - how long the job will run (same as -t)
 #SBATCH --nodes=1                 # number of different nodes - could be an exact number or a range of nodes (same as -N)
 #SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
 #SBATCH --cpus-per-task=4           # number of CPUs (or cores) per task (same as -c)
 #SBATCH --mem-per-cpu=32G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
-#SBATCH --job-name mocc_pseudo_blast      # you can give your job a name for easier identification (same as -J)
+#SBATCH --job-name mocc_pseudo_pipeline      # you can give your job a name for easier identification (same as -J)
 #SBATCH --mail-user=elijahlowe@gmail.com
 #SBATCH --mail-type=ALL
  
@@ -20,8 +20,9 @@ cd $SCRATCH/mol_paper/mol_paper/maker/mocc
  
 #sed -i 's/+//g' KH.KHGene.2012.Met.protein.fasta # remove * from end of sequences
 #makeblastdb -in KH.KHGene.2012.Met.protein.fasta -dbtype prot -parse_seqids
-makeblastdb -in mocc.redundan.fa -dbtype nucl -parse_seqids
-tblastn -db mocc.redundan.fa -query ../KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocc
+#makeblastdb -in mocc.redundan.fa -dbtype nucl -parse_seqids
+#tblastn -db mocc.redundan.fa -query ../KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocc
 
- 
+source activate py2.7
+python ~/_pseudo_pkg/pseudo_wrap.py mocc_pseudo_param.txt
 scontrol show job $SLURM_JOB_ID     ### write job information to output file
