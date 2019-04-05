@@ -22,7 +22,7 @@ cd $SCRATCH/mol_paper/mol_paper/maker
 #makeblastdb -in KH.KHGene.2012.Met.protein.fasta -dbtype prot -parse_seqids
 #makeblastdb -in mocu.redundan.fa -dbtype nucl -parse_seqids
 #tblastn -db mocu.redundan.fa -query KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocu
-tblastn -query KH.KHGene.2012.Met.protein.fasta -db mocu.redundan.maker.output/mocu.redundan.all.maker.transcripts.fasta -evalue 1e-30 -qcov_hsp_perc 80 > ciona_vs_mocu_cdna
+tblastn -query KH.KHGene.2012.Met.protein.fasta -db mocu.redundan.maker.output/mocu.redundan.all.maker.transcripts.fasta -evalue 1e-5  -outfmt 6 -num_threads 4 > ciona_vs_mocu_cdna
 
 source activate py2.7
 python ~/_pseudo_pkg/pseudo_wrap.py mocu_pseudo_param_cdna.txt 
