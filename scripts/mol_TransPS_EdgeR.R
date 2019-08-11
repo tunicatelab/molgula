@@ -1,4 +1,14 @@
+#Additional File 4
+#EdgeR differential express analysis
 
+#1. Read in Data
+#2. Check Correlations between Replicates
+#3. Replicate correlations between parents and hybrids
+#4. Combine Replicates
+#5. Combine data into single matrix
+#6. Quality Filtering
+#7. Downsample for cis/trans analysis
+#8. Downsample for mode of inheritance analysis
 # Libraries ---------------------------------------------------------------
 
 library(edgeR)
@@ -7,7 +17,8 @@ library(gridExtra)
 library(ggplot2)
 library(ggrepel)
 
-# Load_count_files --------------------------------------------------------
+
+# 1. Read in Data --------------------------------------
 setwd("/Users/elijahlowe/Desktop/tails/scaffolded_gene_models/")
 
 
@@ -30,7 +41,7 @@ Mocu.data <- Mocu.3hpf %>%
   # mutate(mocu_gene=gsub("\\|m.+", "", mocu_gene))
 
 
-# Load M. occulta samples -------------------------------------------------
+#------------------- Load M. occulta samples ---
 
 Mocc.3hpf   <- read_tsv("SRR1197985_mocc_GG.xprs") %>% 
   dplyr::rename(Mocc_f3 = eff_counts, mocc_gene = target_id)
@@ -52,7 +63,7 @@ Mocc.data <- Mocc.3hpf %>%
   #mutate(mocc_gene=gsub("\\|m.+", "", mocc_gene))
 
 
-# Load hybrid samples -----------------------------------------------------
+#------------------- Load hybrid samples ---
 
 hyb_ocu.3hpf <- read_tsv("SRR1198337_mocu_GG.xprs") %>% 
   dplyr::rename(hyb_ocu_f3 = eff_counts, mocu_gene = target_id)
@@ -80,7 +91,7 @@ hyb_occ.data <- hyb_occ.3hpf %>%
   select(mocc_gene, hyb_occ_f3, hyb_occ_f4, hyb_occ_f6)# %>% 
  # mutate(mocc_gene=gsub("\\|m.+", "", mocc_gene))
 
-# Join all datasets, and filter with reciprocal  --------------------------
+#------------------- Join all datasets, and filter with reciprocal  ---
 
 recip_table <- read_tsv('may_ortho.proteinortho', col_types = list(col_double(),col_double(),col_double(),col_character(),col_character(),col_character()), col_names = c("# Species","Genes", "Alg.-Conn.", "KH", "mocc_gene","mocu_gene")) %>% 
   filter(`# Species` >= 2, !grepl('\\*|,', mocc_gene),!grepl('\\*|,', mocu_gene)) %>% 
@@ -88,7 +99,7 @@ recip_table <- read_tsv('may_ortho.proteinortho', col_types = list(col_double(),
   mutate(mocc_gene=gsub("\\|m.+", "", mocc_gene)) %>% 
   mutate(mocu_gene=gsub("\\|m.+", "", mocu_gene))
 
-#recip <- read_csv('all-mocu_GG_TransPS.x.mocc_GG_TransPS.recip', col_types = list(col_character(),col_character()), col_names = c("mocu_gene","mocc_gene")) #nucleotide orthology
+recip <- read_csv('all-mocu_GG_TransPS.x.mocc_GG_TransPS.recip', col_types = list(col_character(),col_character()), col_names = c("mocu_gene","mocc_gene")) #nucleotide orthology
 recip <- read_csv('../mocu.x.mocc.TransPS.tblastx.recip', col_types = list(col_character(),col_character()), col_names = c("mocu_gene","mocc_gene")) #translated protein orthology
 Mocu.data %>% 
   mutate(mocu_gene=gsub("\\|m.+", "", mocu_gene)) %>% 
@@ -98,8 +109,7 @@ all.data <- inner_join(Mocu.data, recip) %>%
   inner_join(Mocc.data) %>% 
   inner_join(hyb_ocu.data) %>% 
   inner_join(hyb_occ.data) %>% 
-  mutate(hyb_f3 = hyb_ocu_f3 + hyb_occ_f3, hyb_f4 = hyb_ocu_f4 + hyb_occ_f4, hyb_f6 = hyb_ocu_f6 + hyb_occ_f6,
-         mol_f3 = Mocu_f3 + Mocc_f3.2, mol_f4 = Mocu_f4 + Mocc_f4, mol_f6 = Mocu_f6 + Mocc_f6) %>% 
+  mutate(hyb_f3 = hyb_ocu_f3 + hyb_occ_f3, hyb_f4 = hyb_ocu_f4 + hyb_occ_f4, hyb_f6 = hyb_ocu_f6 + hyb_occ_f6) %>% 
   column_to_rownames('mocu_gene') %>% 
   select(-mocc_gene)
 
@@ -129,39 +139,18 @@ plot(x=trans_lens$length.x, y=trans_lens$length.y)
 TransPS_fit <- lm(trans_lens$length.x ~ trans_lens$length.y)
 summary(TransPS_fit)
 
-# all.data.h <- inner_join(Mocu.data, recip) %>% 
-#   inner_join(Mocc.data) %>% 
-#   inner_join(hyb_ocu.data) %>% 
-#   inner_join(hyb_occ.data) %>% 
-#   mutate(hyb_f3 = hyb_ocu_f3 + hyb_occ_f3, hyb_f4 = hyb_ocu_f4 + hyb_occ_f4, hyb_f6 = hyb_ocu_f6 + hyb_occ_f6) %>% 
-#   select(-mocc_gene)
-
-#We now have a data frame with all the data in it:
-#View(all.data)
-
-
 # Experimental setup ------------------------------------------------------
 
-Group <- factor(paste(species=c("ocu","ocu","ocu","occ","occ","occ","occ","occ","hyb_ocu","hyb_ocu","hyb_ocu","hyb_occ","hyb_occ","hyb_occ","hyb","hyb","hyb","mol","mol","mol"),
-                      stage=c("f3","f4","f6","f3","f3","f4","f5","f6","f3","f4","f6","f3","f4","f6","f3","f4","f6","f3","f4","f6"),sep="."))
+Group <- factor(paste(species=c("ocu","ocu","ocu","occ","occ","occ","occ","occ","hyb_ocu","hyb_ocu","hyb_ocu","hyb_occ","hyb_occ","hyb_occ","hyb","hyb","hyb"),
+                      stage=c("f3","f4","f6","f3","f3","f4","f5","f6","f3","f4","f6","f3","f4","f6","f3","f4","f6"),sep="."))
 edger.data<-DGEList(counts=all.data, group = Group)
 
-# housekeeping <- read.table("all-mocu_GG_TransPS.x.mocc_GG_TransPS.housekeeping")
-# 
-# edger.data1 <- edger.data
-# edger.data1$samples$group <- 1
-# edger.data0 <- estimateDisp(edger.data1[housekeeping$V1,], trend="none", tagwise=FALSE)
-# edger.data$common.dispersion <- edger.data0$common.dispersion
-# fit <- glmFit(edger.data, design)
-# lrt <- glmLRT(fit, coef = ocuf4vsocuf6)
-# 
 keep <- rowSums(cpm(edger.data)>0.5) >=2
 table(keep) 
 edger.data<-edger.data[keep,, keep.lib.sizes=FALSE]
 
 design <- model.matrix(~0+Group)
 colnames(design) <- levels(Group)
-
 
 ocuf3vsoccf3 = c("occ.f3","ocu.f3")
 ocuf4vsoccf4 = c("occ.f4","ocu.f4")
@@ -200,22 +189,30 @@ d3 <- estimateGLMTagwiseDisp(d2,design)
 
 plotMDS(d3, main="edgeR MDS Plot")
 
-edgeRvol <- function(edgeR_results, plot_title){
+edgeRvol <- function(edgeR_results, plot_title, plot_type = "volc"){
   mutateddf <- topTags(edgeR_results, n=nrow(edgeR_results$table))$table %>% 
     rownames_to_column(var = "gene") %>% 
     dplyr::mutate(sig=ifelse(FDR < 0.05 & abs(logFC) > 1.5, "padj<0.05", "Not Sig"))
-  volc = ggplot(mutateddf, aes(logCPM,logFC)) + #volcanoplot with log2Foldchange versus pvalue
-#  MA <- ggplot(mutateddf, aes(FDR, logFC))  +
-    geom_point(aes(col=sig, alpha = sig)) + #add points colored by significance
-    scale_color_manual(values=c("black", "red")) +
-    scale_alpha_manual(guide='none', values = list('Not Sig' = 0.3, 'padj<0.05' = 0.5)) +
-#    xlim(-10.25,10.25) +
-    ylim(-10.5, 10.5) +
-    ggtitle(plot_title) + #e.g. 'Volcanoplot DESeq2'
-    theme_minimal() # simplify plot for publications
-  volc+geom_text_repel(data=head(mutateddf, 20), aes(label=gene)) #adding text for the top 20 genes
-  #ggsave("Volcanoplot.pdf", device="pdf") #In case you want to easily save to disk
-  volc
+  if(plot_type == "MA"){
+    plot_type <- ggplot(mutateddf, aes(logCPM,logFC)) +
+      geom_point(aes(col=sig, alpha = sig)) + #add points colored by significance
+      scale_color_manual(values=c("black", "red")) +
+      scale_alpha_manual(guide='none', values = list('Not Sig' = 0.3, 'padj<0.05' = 0.5)) +
+      #    xlim(-10.25,10.25) +
+      ylim(-10.5, 10.5) +
+      ggtitle(plot_title) + #e.g. 'Volcanoplot DESeq2'
+      theme_minimal() #volcanoplot with log2Foldchange versus pvalue
+  } else if (plot_type == "volc"){
+    plot_type <- ggplot(mutateddf, aes(logFC, -log10(FDR))) +
+      geom_point(aes(col=sig, alpha = sig)) + #add points colored by significance
+      scale_color_manual(values=c("black", "red")) +
+      scale_alpha_manual(guide='none', values = list('Not Sig' = 0.3, 'padj<0.05' = 0.5)) +
+      #    xlim(-10.25,10.25) +
+      #ylim(-0.5, 10.5) +
+      ggtitle(plot_title) + #e.g. 'Volcanoplot DESeq2'
+      theme_minimal()
+  }
+  plot_type
 }
 
 et.mocu.3v4<-exactTest(d3,pair=ocuf3vsocuf4)
@@ -354,133 +351,184 @@ for (i in cond_list) {
   write_csv(get(paste0(i,".up.csv",sep = "")))
 }
 
+
 mocu.3v4.up <- rownames_to_column(topTags(et.mocu.3v4, n=nrow(et.mocu.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) 
+mocu.3v4.up %>%
   write_csv("et.mocu.3v4.up.csv")
 mocu.3v4.down <- rownames_to_column(topTags(et.mocu.3v4, n=nrow(et.mocu.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocu.3v4.down %>%
   write_csv("et.mocu.3v4.down.csv")
 mocc.3v4.up <- rownames_to_column(topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocc.3v4.up %>%
   write_csv("et.mocc.3v4.up.csv")
 mocc.3v4.down <- rownames_to_column(topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) 
+mocc.3v4.down %>%
   write_csv("et.mocc.3v4.down.csv")
 hyb.3v4.up <- rownames_to_column(topTags(et.hyb.3v4, n=nrow(et.hyb.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id)) 
+hyb.3v4.up %>%
   write_csv("et.hyb.3v4.up.csv")
 hyb.3v4.down <- rownames_to_column(topTags(et.hyb.3v4, n=nrow(et.hyb.3v4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb.3v4.down %>%
   write_csv("et.hyb.3v4.down.csv")
+
+hyb_3hpf.up <- rownames_to_column(topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb_3hpf.down <- rownames_to_column(topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb_4hpf.up <- rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb_4hpf.down <- rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
 
 mocu.4v6.up <- rownames_to_column(topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocu.4v6.up %>%
   write_csv("et.mocu.4v6.up.csv")
 mocu.4v6.down <- rownames_to_column(topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocu.4v6.down %>%
   write_csv("et.mocu.4v6.down.csv")
 mocc.4v6.up <- rownames_to_column(topTags(et.mocc.4v6, n=nrow(et.mocc.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocc.4v6.up %>%
   write_csv("et.mocc.4v6.up.csv")
 mocc.4v6.down <- rownames_to_column(topTags(et.mocc.4v6, n=nrow(et.mocc.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocc.4v6.down %>%
   write_csv("et.mocc.4v6.down.csv")
 hyb.4v6.up <- rownames_to_column(topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb.4v6.up %>%
   write_csv("et.hyb.4v6.up.csv")
 hyb.4v6.down <- rownames_to_column(topTags(et.hyb.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb.4v6.down %>%
   write_csv("et.hyb.4v6.down.csv")
+
+hyb_6hpf.up <- rownames_to_column(topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb_6hpf.down <- rownames_to_column(topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
+  as_tibble() %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  separate(gene, c("gene", "KH.id"), sep = "@") %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
 
 mocu.3v6.up <- rownames_to_column(topTags(et.mocu.3v6, n=nrow(et.mocu.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocu.3v6.up%>%
   write_csv("et.mocu.3v6.up.csv")
 mocu.3v6.down <- rownames_to_column(topTags(et.mocu.3v6, n=nrow(et.mocu.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocu.3v6.down %>%
   write_csv("et.mocu.3v6.down.csv")
 mocc.3v6.up <- rownames_to_column(topTags(et.mocc.3v6, n=nrow(et.mocc.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC > 0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocc.3v6.up %>%
   write_csv("et.mocc.3v6.up.csv")
 mocc.3v6.down <- rownames_to_column(topTags(et.mocc.3v6, n=nrow(et.mocc.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
-  inner_join(recip, by = c("gene" = "mocu_gene")) %>%
-  mutate(gene = mocc_gene) %>% 
-  select(-mocc_gene) %>% 
+  filter(logFC < -0.6, PValue < 0.05) %>%
+  # inner_join(recip, by = c("gene" = "mocu_gene")) %>%
+  # mutate(gene = mocc_gene) %>% 
+  # select(-mocc_gene) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+mocc.3v6.down %>%
   write_csv("et.mocc.3v6.down.csv")
 hyb.3v6.up <- rownames_to_column(topTags(et.hyb.3v6, n=nrow(et.hyb.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.05) %>%
+  filter(logFC > 0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb.3v6.up %>%
   write_csv("et.hyb.3v6.up.csv")
 hyb.3v6.down <- rownames_to_column(topTags(et.hyb.3v6, n=nrow(et.hyb.3v6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC < -1.5, FDR < 0.05) %>%
+  filter(logFC < -0.6, PValue < 0.05) %>%
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
-  mutate(KH.id=gsub("\\.v.+", "", KH.id)) %>%
+  mutate(KH.id=gsub("\\.v.+", "", KH.id))
+hyb.3v6.down %>%
   write_csv("et.hyb.3v6.down.csv")
 
 # write all results -------------------------------------------------------
@@ -600,40 +648,45 @@ library(readxl)
 
 mol3vhyb3_genes <- rownames_to_column(topTags(et.molf3vshybf3, n=nrow(et.molf3vshybf3$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(FDR < 0.1) %>% 
-  select(gene)
-mol4vhyb4_up_genes <- rownames_to_column(topTags(et.molf4vshybf4, n=nrow(et.molf4vshybf4$table))$table, "gene") %>%
+  arrange(gene)
+mol4vhyb4_genes <- rownames_to_column(topTags(et.molf4vshybf4, n=nrow(et.molf4vshybf4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.1) %>% 
-  select(gene)
+  arrange(gene)
 mol6vhyb6_genes <- rownames_to_column(topTags(et.molf6vshybf6, n=nrow(et.molf6vshybf6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(FDR < 0.1) %>% 
-  select(gene)
+  arrange(gene) 
 
-mocuhyb3vmocchyb3_FDR_genes <- rownames_to_column(topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table, "gene") %>%
+mocuhyb3vmocchyb3_genes <- rownames_to_column(topTags(et.mocuhyb3vmocchyb3, n=nrow(et.mocuhyb3vmocchyb3$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(FDR < 0.1)
-mocuhyb4vmocchyb4_up_genes <- rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table, "gene") %>%
+  arrange(gene)
+mocuhyb4vmocchyb4_genes <- rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb4vmocchyb4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.1) %>% 
-  select(gene)
-mocuhyb6vmocchyb6_up_genes <- rownames_to_column(topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
+  arrange(gene) 
+mocuhyb6vmocchyb6_genes <- rownames_to_column(topTags(et.mocuhyb6vmocchyb6, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.1) %>% 
-  select(gene)
+  arrange(gene)
 
-mocu3vmocc3_FDR_genes <- rownames_to_column(topTags(et.mocu3vmocc3, n=nrow(et.mocu3vmocc3$table))$table, "gene") %>%
+mocu3vmocc3_genes <- rownames_to_column(topTags(et.mocu3vmocc3, n=nrow(et.mocu3vmocc3$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(FDR < 0.1)
-mocu4vmocc4_up_genes <- rownames_to_column(topTags(et.mocu4vmocc4, n=nrow(et.mocu4vmocc4$table))$table, "gene") %>%
+  arrange(gene)
+mocu4vmocc4_genes <- rownames_to_column(topTags(et.mocu4vmocc4, n=nrow(et.mocu4vmocc4$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5, FDR < 0.1) %>% 
-  select(gene)
+  arrange(gene) 
 mocu6vmocc6_genes <- rownames_to_column(topTags(et.mocu4vmocc4, n=nrow(et.mocu6vmocc6$table))$table, "gene") %>%
   as_tibble() %>%
-  filter(logFC > 1.5) %>% 
-  select(gene)
+  arrange(gene) 
+
+mol_f3_sig <- filter(mocu3vmocc3_genes, PValue < 0.05)$gene
+f3_mol_eq_hyb_ratio <- filter(-1 < log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) | log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) < 1)
+hyb_f3_sig <- filter(mocuhyb3vmocchyb3_genes, PValue < 0.05)
+cons_f3 <- (mocu3vmocc3_genes$PValue > 0.05 & mocuhyb3vmocchyb3_genes$PValue > 0.05 & mocu3vmocc3_genes$gene %in% mocuhyb3vmocchyb3_genes$gene & -1 < log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) | log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) < 1)
+trans_f3 <- (mocu3vmocc3_genes$PValue < 0.05 & mocuhyb3vmocchyb3_genes$PValue > 0.05 & mocu3vmocc3_genes$gene %in% mocuhyb3vmocchyb3_genes$gene & -1 > log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) | log2(mocu3vmocc3_genes$logFC/mocuhyb3vmocchyb3_genes$logFC) > 1)
+
+inner_join(mocu3vmocc3_genes, mocuhyb3vmocchyb3_genes, by = "gene") %>% 
+  mutate(ratio_eq = ifelse(-1 < log2(logFC.x/logFC.y) | log2(logFC.x/logFC.y) < 1), TRUE) %>% View()
+  filter(ratio_eq == FALSE)
+
+
 
 
 mocu_4v6_up_genes <- rownames_to_column(topTags(et.mocu.4v6, n=nrow(et.mocu.4v6$table))$table, "gene") %>%
@@ -649,7 +702,7 @@ mocc_4v6_down_genes <- rownames_to_column(topTags(et.mocc.4v6, n=nrow(et.hyb.4v6
   filter(logFC < 0) %>% 
   separate(gene, c("gene", "KH.id"), sep = "@") %>%
   mutate(KH.id=gsub("\\.v.+", "", KH.id))  %>%
-  inner_join(mocc_pseudo_filtered, by = c("KH.id"="KH")) %>% filter(cate == "high") %>%  View()
+  inner_join(mocc_pseudo_filtered, by = c("KH.id"="KH")) %>% filter(cate == "high") %>%
   select(gene)
 mocc_4v6_up_genes <- rownames_to_column(topTags(et.mocc.4v6, n=nrow(et.hyb.4v6$table))$table, "gene") %>%
   as_tibble() %>%
@@ -668,7 +721,7 @@ mocc_3v4_up_genes <- rownames_to_column(topTags(et.mocc.3v4, n=nrow(et.mocc.3v4$
   as_tibble() %>%
   filter(logFC > 1.5, FDR < 0.05) %>% 
   select(gene)
-rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
+mocuhyb_v_mocchyb_4f <- rownames_to_column(topTags(et.mocuhyb4vmocchyb4, n=nrow(et.mocuhyb6vmocchyb6$table))$table, "gene") %>%
   as_tibble() %>%
   filter((gene %in% mocu_4v6_up_genes$gene) & !(gene %in% hyb_4v6_up_genes$gene) & (gene %in% mocc_4v6_up_genes$gene)) %>%
   mutate(allele = logFC > 0) %>% count()
@@ -862,6 +915,7 @@ et.mocuhyb3vmocchyb3["MOCU.TRINITY_GG_1324_c2_g1@KH.C1.498.v1.A.SL1-1",]
 et.mocuhyb4vmocchyb4["MOCU.TRINITY_GG_1324_c2_g1@KH.C1.498.v1.A.SL1-1",]
 et.mocuhyb6vmocchyb6["MOCU.TRINITY_GG_1324_c2_g1@KH.C1.498.v1.A.SL1-1",]
 et.mocc.4v6["MOCU.TRINITY_GG_1324_c2_g1@KH.C1.498.v1.A.SL1-1",]
+et.mocu.4v6[mocu_ebf,]
 cpm(d3,normalized.lib.sizes=TRUE) %>% 
   as.data.frame() %>% 
   rownames_to_column() %>% 
@@ -1026,6 +1080,19 @@ library(UpSetR)
 listInput <- list('M. oculata neur v gast up' = mocu.3v4.up$gene, 'M. oculata neur v gast down' = mocu.3v4.down$gene, 'M. occulta neur v gast up' = mocc.3v4.up$gene, 'M. occulta neur v gast down' = mocc.3v4.down$gene, 'M. hybrid neur v gast up' = hyb.3v4.up$gene, 'M. hybrid neur v gast down' = hyb.3v4.down$gene,
                   'M. oculata tail v neur up' = mocu.4v6.up$gene, 'M. oculata tail v neur down' = mocu.4v6.down$gene, 'M. occulta tail v neur up' = mocc.4v6.up$gene, 'M. occulta tail v neur down' = mocc.4v6.down$gene, 'M. hybrid tail v neur up' = hyb.4v6.up$gene, 'M. hybrid tail v neur down' = hyb.4v6.down$gene,
                   'M. oculata tail v gast up' = mocu.3v6.up$gene, 'M. oculata tail v gast down' = mocu.3v6.down$gene, 'M. occulta tail v gast up' = mocc.3v6.up$gene, 'M. occulta tail v gast down' = mocc.3v6.down$gene, 'M. hybrid tail v gast up' = hyb.3v6.up$gene, 'M. hybrid tail v gast down' = hyb.3v6.down$gene)
+
+nr.x.gt <- list('M. oculata neur v gast up' = mocu.3v4.up$gene, 'M. oculata neur v gast down' = mocu.3v4.down$gene, 'M. occulta neur v gast up' = mocc.3v4.up$gene, 'M. occulta neur v gast down' = mocc.3v4.down$gene, 'M. hybrid neur v gast up' = hyb.3v4.up$gene, 'M. hybrid neur v gast down' = hyb.3v4.down$gene,
+                'Hybrid M.oculata allele 3hpf' = hyb_3hpf.up$gene, 'Hybrid M. occulta allele 3hpf' = hyb_3hpf.down$gene, 'Hybrid M.oculata allele 4hpf' = hyb_4hpf.up$gene, 'Hybrid M.occulta allele 4hpf' = hyb_4hpf.down$gene)
+upset(fromList(nr.x.gt), order.by = "freq", nsets = 10)
+tb.x.nr <- list('M. oculata tail v neur up' = mocu.4v6.up$gene, 'M. oculata tail v neur down' = mocu.4v6.down$gene, 'M. occulta tail v neur up' = mocc.4v6.up$gene, 'M. occulta tail v neur down' = mocc.4v6.down$gene, 'M. hybrid tail v neur up' = hyb.4v6.up$gene, 'M. hybrid tail v neur down' = hyb.4v6.down$gene,
+                'Hybrid M.oculata allele 6hpf' = hyb_6hpf.up$gene, 'Hybrid M. occulta allele 6hpf' = hyb_6hpf.down$gene, 'Hybrid M.oculata allele 4hpf' = hyb_4hpf.up$gene, 'Hybrid M.occulta allele 4hpf' = hyb_4hpf.down$gene)
+upset(fromList(tb.x.nr), order.by = "freq", nsets = 10)
+tb.x.gt <- list('M. oculata tail v gast up' = mocu.3v6.up$gene, 'M. oculata tail v gast down' = mocu.3v6.down$gene, 'M. occulta tail v gast up' = mocc.3v6.up$gene, 'M. occulta tail v gast down' = mocc.3v6.down$gene, 'M. hybrid tail v gast up' = hyb.3v6.up$gene, 'M. hybrid tail v gast down' = hyb.3v6.down$gene,
+                'Hybrid M.oculata allele 3hpf' = hyb_3hpf.up$gene, 'Hybrid M. occulta allele 3hpf' = hyb_3hpf.down$gene, 'Hybrid M.oculata allele 6hpf' = hyb_6hpf.up$gene, 'Hybrid M.occulta allele 6hpf' = hyb_6hpf.down$gene)
+upset(fromList(tb.x.gt), order.by = "freq", nsets = 10)
+
+
+
 pdf('molgula_de_upsetplot.pdf')
 upset(fromList(listInput), order.by = "freq", nsets = 18)
 dev.off()
