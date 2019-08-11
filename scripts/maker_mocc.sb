@@ -16,6 +16,9 @@ module load maker
  
 cd $SCRATCH/mol_paper/mol_paper/maker/mocc
  
-maker -R -fix_nucleotides -cpus 8              ### call your executable (similar to mpirun)
- 
+#maker -R -fix_nucleotides -cpus 8              ### call your executable (similar to mpirun)
+
+cd mocc.redundan.maker.output/
+gff3_merge -d mocc.redundan_master_datastore_index.log -o mocc.redundan.all.maker.gff3
+fasta_merge -d mocc.redundan_master_datastore_index.log -o mocc.snap 
 scontrol show job $SLURM_JOB_ID     ### write job information to output file

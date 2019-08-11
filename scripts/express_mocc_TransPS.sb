@@ -1,0 +1,33 @@
+#!/bin/bash --login
+########## SBATCH Lines for Resource Request ##########
+ 
+#SBATCH --time=120:00:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --nodes=1                 # number of different nodes - could be an exact number or a range of nodes (same as -N)
+#SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=4           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem-per-cpu=32G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
+#SBATCH --job-name mocc_TransPS_express      # you can give your job a name for easier identification (same as -J)
+#SBATCH --mail-user=elijahlowe@gmail.com
+#SBATCH --mail-type=ALL
+ 
+########## Command Lines to Run ##########
+
+module load icc/2018.1.163-GCC-6.4.0-2.28  
+module load impi/2018.1.163
+module load GCCcore/6.4.0
+module load express/1.5.1
+module load Bowtie2/2.3.4.1
+
+moccT_sra='SRR1197985 SRR1197986 SRR1199259 SRR1199268 SRR1199464'
+hybT_sra='SRR1198346 SRR1198337 SRR1198321'
+
+cd $SCRATCH/mol_paper
+ln -sf ~/transcriptomes/mocc_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA .
+
+bowtie2-build mocc_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA mocc_TransPS_bt2
+for i in $moccT_sra $hybT_sra;do bowtie2 -p 4 -x mocc_TransPS_bt2 -1 ${i}_1.fastq -2 ${i}_2.fastq | express -o $(basename $i _1.fastq)_mocc_TransPS_express mocc_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA;done
+
+#for i in $moccT_sra $hybT_sra;do bowtie2 -a -X 600 --rdg 6,5 --rfg 6,5 --score-min L,-.6,-.4 --no-discordant --no-mixed -p 4 -x mocc_TransPS_bt2 -1 ${i}_1.fastq -2 ${i}_2.fastq | express -o $(basename $i _1.fastq)_mocc_TransPS_express mocc.snap.all.TransPS.transcripts.renamed.fasta;done
+
+qstat -f ${PBS_JOBID}
+

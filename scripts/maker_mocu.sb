@@ -16,12 +16,12 @@ module load maker
  
 cd $SRATCH/mol_paper/mol_paper/maker
  
-#maker -R -fix_nucleotides -cpus 8              ### call your executable (similar to mpirun)
+maker -R -fix_nucleotides -cpus 8              ### call your executable (similar to mpirun)
 #fasta_merge -d 
 #gff3_merge -d 
 
-cd mocu.redundan.maker.output
-blastp -query mocu.redundan.all.maker.proteins.fasta -db ../KH.KHGene.2012.Met.protein.fasta -evalue 1e-6 -max_hsps 1 -max_target_seqs 1 -outfmt 6 -num_threads 8 -out mocu.redundan.all.maker.proteins.fasta.blastp 
+#cd mocu.redundan.maker.output
+#blastp -query mocu.redundan.all.maker.proteins.fasta -db ../KH.KHGene.2012.Met.protein.fasta -evalue 1e-6 -max_hsps 1 -max_target_seqs 1 -outfmt 6 -num_threads 8 -out mocu.redundan.all.maker.proteins.fasta.blastp 
 #/opt/software/interproscan/5.33-72.0/interproscan.sh -appl pfam -dp -f TSV -goterms -iprlookup -pa -t p -i mocu.redundan.all.maker.proteins.fasta -o mocu.redundan.all.maker.proteins.fasta.iprscan
 
 

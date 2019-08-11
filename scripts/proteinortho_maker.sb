@@ -1,0 +1,53 @@
+#!/bin/bash --login
+########## SBATCH Lines for Resource Request ##########
+ 
+#SBATCH --time=120:00:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --nodes=1                 # number of different nodes - could be an exact number or a range of nodes (same as -N)
+#SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=4           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem-per-cpu=32G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
+#SBATCH --job-name proteinortho_pipeline      # you can give your job a name for easier identification (same as -J)
+#SBATCH --mail-user=elijahlowe@gmail.com
+#SBATCH --mail-type=ALL
+ 
+########## Command Lines to Run ##########
+
+source activate py2.7
+ 
+#cd $SCRATCH/mol_paper/mol_paper/maker
+#perl ~/proteinortho_v5.16b/proteinortho5.pl KH.KHGene.2012.Met.protein.fasta mocu.redundan.maker.output/mocu.maker.snap.all.maker.proteins.fasta mocc/mocc.redundan.maker.output/mocc.snap.all.maker.proteins.renamed.fasta
+
+cd $SCRATCH/mol_paper/mol_paper/maker/ortho_maker
+#cut -d'=' -f2 KH.KHGene.2012.gff3 | uniq > matches.txt
+#fastafetch -f ../KH.KHGene.2012.Met.protein.fasta -q matches.txt -i ma -F -s > KH.KHGene.2012.fasta
+#CDS KH.KHGene.2012.gff3 > KH.KHGene.2012.gff
+#sed 's/Parent/Name/g' -i KH.KHGene.2012.gff
+#sed 's/$/;/g' KH.KHGene.2012.gff -i
+
+#grep CDS mocu.redundan.all.maker.renamed.gff3 > mocu.redundan.all.maker.proteins.gff
+#sed 's/D|size.*/D/g' mocu.redundan.all.maker.proteins.gff -i
+#sed 's/C|size.*/C/g' mocu.redundan.all.maker.proteins.gff -i
+#sed 's/B|size.*/B/g' mocu.redundan.all.maker.proteins.gff -i
+#sed 's/A|size.*/A/g' mocu.redundan.all.maker.proteins.gff -i
+#sed 's/$/;/g' mocu.redundan.all.maker.proteins.gff -i
+
+#sed 's/A|.*/A/g' mocu.maker.snap.all.maker.proteins.fasta -i
+#sed 's/B|.*/B/g' mocu.maker.snap.all.maker.proteins.fasta -i
+#sed 's/C|.*/C/g' mocu.maker.snap.all.maker.proteins.fasta -i
+#sed 's/D|.*/D/g' mocu.maker.snap.all.maker.proteins.fasta -i
+
+#grep CDS mocc.redundan.all.renamed.gff3 > mocc.redundan.all.maker.proteins.gff
+#sed 's/RA.*/RA/g' mocc.redundan.all.maker.proteins.gff -i
+#sed 's/RB.*/RB/g' mocc.redundan.all.maker.proteins.gff -i
+#sed 's/RC.*/RC/g' mocc.redundan.all.maker.proteins.gff -i
+#sed 's/RD.*/RD/g' mocc.redundan.all.maker.proteins.gff -i
+#sed 's/$/;/g' mocc.redundan.all.maker.proteins.gff -i
+
+#sed 's/RA.*/RA/g' mocc.snap.all.maker.proteins.renamed.fasta -i
+#sed 's/RB.*/RB/g' mocc.snap.all.maker.proteins.renamed.fasta -i
+#sed 's/RC.*/RC/g' mocc.snap.all.maker.proteins.renamed.fasta -i
+#sed 's/RD.*/RD/g' mocc.snap.all.maker.proteins.renamed.fasta -i
+
+perl ~/proteinortho_v5.16b/proteinortho5.pl -synteny KH.KHGene.2012.fasta mocu.maker.snap.all.maker.proteins.fasta mocc.snap.all.maker.proteins.renamed.fasta -project=maker_synteny -clean -singles
+
+scontrol show job $SLURM_JOB_ID     ### write job information to output file

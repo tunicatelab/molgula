@@ -19,9 +19,9 @@ module load BLAST+/2.8.1-Python-2.7.14
 cd $SCRATCH/mol_paper/mol_paper/maker/mocc
  
 #sed -i 's/+//g' KH.KHGene.2012.Met.protein.fasta # remove * from end of sequences
-#makeblastdb -in KH.KHGene.2012.Met.protein.fasta -dbtype prot -parse_seqids
-#makeblastdb -in mocc.redundan.fa -dbtype nucl -parse_seqids
-#tblastn -db mocc.redundan.fa -query ../KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocc
+makeblastdb -in KH.KHGene.2012.Met.protein.fasta -dbtype prot -parse_seqids
+makeblastdb -in mocc.redundan.fa -dbtype nucl -parse_seqids
+tblastn -db mocc.redundan.fa -query ../KH.KHGene.2012.Met.protein.fasta -evalue 5 -outfmt 6 -num_threads 4 > ciona_vs_mocc
 
 source activate py2.7
 python ~/_pseudo_pkg/pseudo_wrap.py mocc_pseudo_param.txt

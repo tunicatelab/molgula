@@ -1,0 +1,20 @@
+#!/bin/bash --login
+########## SBATCH Lines for Resource Request ##########
+ 
+#SBATCH --time=120:00:00             # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --nodes=1                 # number of different nodes - could be an exact number or a range of nodes (same as -N)
+#SBATCH --ntasks=1                  # number of tasks - how many tasks (nodes) that you require (same as -n)
+#SBATCH --cpus-per-task=4           # number of CPUs (or cores) per task (same as -c)
+#SBATCH --mem-per-cpu=32G            # memory required per allocated CPU (or core) - amount of memory (in bytes)
+#SBATCH --job-name ortho_blast      # you can give your job a name for easier identification (same as -J)
+#SBATCH --mail-user=elijahlowe@gmail.com
+#SBATCH --mail-type=ALL
+ 
+########## Command Lines to Run ##########
+
+cd $SCRATCH/mol_paper/
+ 
+blastall -p tblastx -i mocu_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA -d mocc_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA -e 1e-10 > mocu.x.mocc.TransPS.output
+blastall -p tblastx -d mocu_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA -i mocc_GG_supertrans.fasta.transdecoder.all.TransPS.mRNA -e 1e-10 > mocc.x.mocu.TransPS.output
+
+scontrol show job $SLURM_JOB_ID     ### write job information to output file
