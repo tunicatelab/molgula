@@ -99,6 +99,15 @@ annotated_genes <- TF %>%
 View(annotated_genes)
 
 
+# get expression patterns -------------------------------------------------
+
+expression_url <- ("http://ghost.zool.kyoto-u.ac.jp/cgi-bin/txtgetkh.cgi?inkey=citb008o08&source=kh2013")
+read_html(expression_url)
+
+
+
+
+
 # Label microarray probes -------------------------------------------------
 
 data_to_annotate <- read_excel("~/Desktop/Alberto/AlbertoRMA1-9b-LOSTPROBESETS-plusSequences.xlsx")
