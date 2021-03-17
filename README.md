@@ -8,4 +8,12 @@ Genome and transcriptome assemblies can be found on [open science framework](htt
 
 _M. occulta_ and _M. oculata_ reads were mapped to their respective transcriptomes using [bowtie2](https://github.com/BenLangmead/bowtie2) and [eXpress](https://pachterlab.github.io/eXpress/overview.html) streaming pipeline. Reads from _occulta X oculata_ hybrids were mapped onto both parent transcriptomes in the same manner in order to quantify allele-specific expression. 
 
-[EdgeR](https://www.bioconductor.org/packages/devel/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf) was used to idenify differentially expressed genes. 
+[EdgeR](https://www.bioconductor.org/packages/devel/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf) was used to identify differentially expressed genes. 
+
+REFERENCES:
+
+Lowe EK, Swalla BJ, Brown CT. Evaluating a lightweight transcriptome assembly pipeline on two closely related ascidian species. PeerJ PrePrints; 2014 Sep 18.
+
+Stolfi A, Lowe EK, Racioppi C, Ristoratore F, Brown CT, Swalla BJ, Christiaen L. Divergent mechanisms regulate conserved cardiopharyngeal development and gene expression in distantly related ascidians. elife. 2014 Sep 10;3:e03728.
+
+Lowe EK, Racioppi C, Peyriéras N, Ristoratore F, Christiaen L, Swalla BJ, Stolfi A. A cis‐regulatory change underlying the motor neuron‐specific loss of Ebf expression in immotile tunicate larvae. Evolution & Development. 2020 Dec 23:e12364.
